@@ -12,6 +12,7 @@ data on NEOs and close approaches extracted by `extract.load_neos` and
 You'll edit this file in Tasks 2 and 3.
 """
 
+
 class NEODatabase:
     """A database of near-Earth objects and their close approaches.
 
@@ -20,6 +21,7 @@ class NEODatabase:
     help fetch NEOs by primary designation or by name and to help speed up
     querying for close approaches that match criteria.
     """
+
     def __init__(self, neos, approaches):
         """Create a new `NEODatabase`.
 
@@ -38,12 +40,35 @@ class NEODatabase:
         :param neos: A collection of `NearEarthObject`s.
         :param approaches: A collection of `CloseApproach`es.
         """
+        # sort by designation desc to make query faster
+        neos = list(neos)  # to be sortable
+        approaches = list(approaches) # to be sortable
+        neos.sort(key=lambda x: x.designation)
+        approaches.sort(key=lambda x: x.designation)
+
         self._neos = neos
         self._approaches = approaches
 
-        # TODO: What additional auxiliary data structures will be useful?
+        i = 0
+        j = 0
 
-        # TODO: Link together the NEOs and their close approaches.
+        while i < len(self.neos) and j < len(self.approaches):
+            neo = self.neos[i]
+            approach = self.approaches[j]
+            if neo.designation == approach.designation:
+                neo.approaches.append(approach)
+                approach.neo = neo
+                j += 1
+            else:
+                i += 1
+
+    @property
+    def neos(self):
+        return self._neos
+
+    @property
+    def approaches(self):
+        return self._approaches
 
     def get_neo_by_designation(self, designation):
         """Find and return an NEO by its primary designation.
@@ -56,10 +81,16 @@ class NEODatabase:
         match is found.
 
         :param designation: The primary designation of the NEO to search for.
-        :return: The `NearEarthObject` with the desired primary designation, or `None`.
+        :return: The `NearEarthObject` with the desired primary designation,
+        or `None`.
         """
-        # TODO: Fetch an NEO by its primary designation.
-        return None
+        filtered_neo = list(filter(
+            lambda neo: neo.designation == designation
+            or neo.designation == designation.lower()
+            or neo.designation == designation.upper(),
+            self._neos
+        ))
+        return filtered_neo[0] if filtered_neo else None
 
     def get_neo_by_name(self, name):
         """Find and return an NEO by its name.
@@ -75,11 +106,17 @@ class NEODatabase:
         :param name: The name, as a string, of the NEO to search for.
         :return: The `NearEarthObject` with the desired name, or `None`.
         """
-        # TODO: Fetch an NEO by its name.
-        return None
+        filtered_neo = list(filter(
+            lambda neo: neo.name == name
+            or neo.name == name.lower()
+            or neo.name == name.upper(),
+            self._neos
+        ))
+        return filtered_neo[0] if filtered_neo else None
 
     def query(self, filters=()):
-        """Query close approaches to generate those that match a collection of filters.
+        """Query close approaches to generate those that match a collection
+        of filters.
 
         This generates a stream of `CloseApproach` objects that match all of the
         provided filters.
@@ -89,9 +126,17 @@ class NEODatabase:
         The `CloseApproach` objects are generated in internal order, which isn't
         guaranteed to be sorted meaninfully, although is often sorted by time.
 
-        :param filters: A collection of filters capturing user-specified criteria.
+        :param filters: A collection of filters capturing user-specified
+        criteria.
         :return: A stream of matching `CloseApproach` objects.
         """
-        # TODO: Generate `CloseApproach` objects that match all of the filters.
-        for approach in self._approaches:
-            yield approach
+        for approach in self.approaches:
+            if filters:
+                for item in filters:
+                    if item(approach):
+                        if filters.index(item) + 1 == len(filters):
+                            yield approach
+                    else:
+                        break
+            else:
+                yield approach
