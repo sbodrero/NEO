@@ -45,7 +45,6 @@ class NEODatabase:
         approaches = list(approaches)  # to be sortable
 
         # sort by designation desc to make query faster
-        # pre compute get_neo_by_designation
         neos.sort(key=lambda x: x.designation)
         approaches.sort(key=lambda x: x.designation)
 
@@ -68,6 +67,11 @@ class NEODatabase:
         # pre compute get_neo_by_name
         neos_by_name = copy.deepcopy(self.neos)
         self._neos_by_name = sorted(neos_by_name, key=lambda x: x.name or '')
+
+        # pre compute get_neo_by_designation
+        neos_by_designation = copy.deepcopy(self.neos)
+        neos_by_designation.sort(key=lambda x: x.designation)
+        self._neos_by_designation = neos_by_designation
 
     @property
     def neos(self):
@@ -95,7 +99,7 @@ class NEODatabase:
             lambda neo: neo.designation == designation
             or neo.designation == designation.lower()
             or neo.designation == designation.upper(),
-            self._neos
+            self._neos_by_designation
         ))
         return filtered_neo[0] if filtered_neo else None
 
