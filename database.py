@@ -11,6 +11,7 @@ data on NEOs and close approaches extracted by `extract.load_neos` and
 
 You'll edit this file in Tasks 2 and 3.
 """
+import copy
 
 
 class NEODatabase:
@@ -40,9 +41,11 @@ class NEODatabase:
         :param neos: A collection of `NearEarthObject`s.
         :param approaches: A collection of `CloseApproach`es.
         """
-        # sort by designation desc to make query faster
         neos = list(neos)  # to be sortable
-        approaches = list(approaches) # to be sortable
+        approaches = list(approaches)  # to be sortable
+
+        # sort by designation desc to make query faster
+        # pre compute get_neo_by_designation
         neos.sort(key=lambda x: x.designation)
         approaches.sort(key=lambda x: x.designation)
 
@@ -61,6 +64,10 @@ class NEODatabase:
                 j += 1
             else:
                 i += 1
+
+        # pre compute get_neo_by_name
+        neos_by_name = copy.deepcopy(self.neos)
+        self._neos_by_name = sorted(neos_by_name, key=lambda x: x.name or '')
 
     @property
     def neos(self):
@@ -110,7 +117,7 @@ class NEODatabase:
             lambda neo: neo.name == name
             or neo.name == name.lower()
             or neo.name == name.upper(),
-            self._neos
+            self._neos_by_name
         ))
         return filtered_neo[0] if filtered_neo else None
 
