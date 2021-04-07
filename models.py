@@ -24,16 +24,17 @@ class NearEarthObject:
     """A near-Earth object (NEO).
 
     An NEO encapsulates semantic and physical parameters about the object, such
-    as its primary designation (required, unique), IAU name (optional), diameter
-    in kilometers (optional - sometimes unknown), and whether it's marked as
-    potentially hazardous to Earth.
+    as its primary designation (required, unique), IAU name (optional),
+    diameter in kilometers (optional - sometimes unknown), and whether it's
+    marked as potentially hazardous to Earth.
 
     A `NearEarthObject` also maintains a collection of its close approaches -
     initialized to an empty collection, but eventually populated in the
     `NEODatabase` constructor.
     """
-    def __init__(self, designation, hazardous, name=None, diameter=float('nan'),
-                 approaches=[]):
+
+    def __init__(self, designation, hazardous, name=None,
+                 diameter=float('nan'), approaches=[]):
         """Create a new `NearEarthObject`.
 
         :param info: A dictionary of excess keyword arguments supplied to
@@ -52,14 +53,13 @@ class NearEarthObject:
         return f"{self.designation} {self.name}"
 
     def get_string_hazardous_status(self):
+        """Return  human readable hazourdous status."""
         if self.hazardous:
             return 'is'
         return 'is not'
 
     def __json__(self):
-        """
-        Return a serialized version of an instance for json dump purpose
-        """
+        """Return a serialized version of an instance for json dump purpose."""
         return {
             'designation': self.designation,
             'name': self.name,
@@ -75,8 +75,7 @@ class NearEarthObject:
                 f"potentially hazardous.")
 
     def __repr__(self):
-        """Return `repr(self)`, a computer-readable string representation
-        of this object."""
+        """Return `repr(self)`."""
         return (f"NearEarthObject(designation={self.designation!r}, "
                 f"name={self.name!r}, "
                 f"diameter={self.diameter:.3f}, hazardous={self.hazardous!r})")
@@ -85,16 +84,17 @@ class NearEarthObject:
 class CloseApproach:
     """A close approach to Earth by an NEO.
 
-    A `CloseApproach` encapsulates information about the NEO's close approach to
-    Earth, such as the date and time (in UTC) of closest approach, the nominal
-    approach distance in astronomical units, and the relative approach velocity
-    in kilometers per second.
+    A `CloseApproach` encapsulates information about the NEO's close approach
+    to Earth, such as the date and time (in UTC) of closest approach, the
+    nominal approach distance in astronomical units, and the relative approach
+    velocity in kilometers per second.
 
     A `CloseApproach` also maintains a reference to its `NearEarthObject` -
     initally, this information (the NEO's primary designation) is saved in a
     private attribute, but the referenced NEO is eventually replaced in the
     `NEODatabase` constructor.
     """
+
     def __init__(self, designation, time, distance, velocity, neo=None):
         """Create a new `CloseApproach`.
 
@@ -111,17 +111,17 @@ class CloseApproach:
 
     @property
     def designation(self):
+        """Public getter of private _designation."""
         return self._designation
 
     @property
     def time_str(self):
-        """Return a formatted representation of this `CloseApproach`'s approach
-        time.
+        """Return a formatted representation of this CA approach time.
 
         The value in `self.time` should be a Python `datetime` object. While a
-        `datetime` object has a string representation, the default representation
-        includes seconds - significant figures that don't exist in our input
-        data set.
+        `datetime` object has a string representation, the default
+        representation includes seconds - significant figures that don't exist
+        in our input data set.
 
         The `datetime_to_str` method converts a `datetime` object to a
         formatted string that can be used in human-readable representations and
@@ -130,9 +130,7 @@ class CloseApproach:
         return datetime_to_str(self.time)
 
     def __json__(self):
-        """
-        Return a serialized version of an instance for json dump purpose
-        """
+        """Return a serialized version of an instance for json dump purpose."""
         return {
             'datetime_utc': datetime_to_str(self.time),
             'distance_au': self.distance,
@@ -147,8 +145,7 @@ class CloseApproach:
                f"{self.velocity:.2f} km/s."
 
     def __repr__(self):
-        """Return `repr(self)`, a computer-readable string representation of
-        this object."""
+        """Return `repr(self)`."""
         return (f"CloseApproach(time={self.time_str!r}, "
                 f"distance={self.distance:.2f}, "
                 f"velocity={self.velocity:.2f}, neo={self.neo!r})")
